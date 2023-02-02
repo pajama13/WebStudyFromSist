@@ -44,6 +44,7 @@ public class RecipeModel {
       
       // request에 담아서 jsp로 전송 
       request.setAttribute("main_jsp", "../recipe/list.jsp");// ..화면을 띄어라 > 디비 연동해서
+      CommonsModel.footerData(request);
       return "../main/main.jsp";
    }
 }

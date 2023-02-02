@@ -7,6 +7,66 @@
 <meta charset="UTF-8">
 <title>Insert title here</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script type="text/javascript" src="http://code.jquery.com/jquery.js"></script>
+<script type="text/javascript">
+$(function(){
+	$('#logBtn').click(function(){
+		//아이디, 패스워드 => 모델로 전송
+		let id=$('#log_id').val();
+		if(id.trim()==="")
+		{
+			$('#log_id').focus();
+			return;
+		}
+		let pwd=$('#log_pwd').val();
+		if(pwd.trim()==="")
+		{
+			$('#log_pwd').focus();
+			return
+		}
+		
+		$.ajax({
+			type:'post',
+			url:'../member/login.do',
+			data:{"id":id,"pwd":pwd},
+			success:function(result)
+			{
+				//NOID, NOPWD, OK
+				let res=result.trim();
+				if(res==='NOID')
+				{
+					alert("아이디가 존재하지 않습니다.")
+					$('#log_id').val("");
+					$('#log_pwd').val("");
+					$('#log_id').focus();
+				}
+				else if(res==='NOPWD')
+				{
+					alert("비밀번호가 틀립니다.")
+					$('#log_pwd').val("");
+					$('#log_pwd').focus();
+				}
+				else
+				{
+					location.href="../main/main.do";
+				}
+			}
+		})
+	})
+	//로그아웃 버튼
+	$('#logoutBtn').click(function(){
+		$.ajax({
+			type:'post',
+			url:'../member/logout.do',
+			success:function(result)
+			{
+				location.href="../main/main.do";
+			}
+		})
+	})
+})
+
+</script>
 </head>
 <body>
 <div class="wrapper row1">
@@ -15,11 +75,21 @@
       <h1><a href="../main/main.do">서울 맛집 & 서울 여행</a></h1>
     </div>
     <div class="fl_right">
-      <ul class="inline">
-        <li>아이디<input type=text name=id size=10 class="input-sm"></li>
-        <li>비밀번호<input type=password name=pwd size=10 class="input-sm"></li>
-        <li><input type=button class="btn btn-lg btn-danger" value="로그인"></li>
-      </ul>
+      <!-- 로그인 안 된 상태(세션에 등록 안 됨) -->
+      <c:if test="${sessionScope.id==null }">  
+	      <ul class="inline">
+	        <li>아이디<input type=text name=id size=10 class="input-sm" id="log_id" autocomplete="off"></li>
+	        <li>비밀번호<input type=password name=pwd size=10 class="input-sm" id="log_pwd" autocomplete="off"></li>
+	        <li><input type=button class="btn btn-lg btn-primary" value="로그인" id="logBtn"></li>
+	      </ul>
+      </c:if>
+      <!-- 로그인된 상태 -->
+      <c:if test="${sessionScope.id!=null }">
+	      <ul class="inline">
+	        <li>${sessionScope.id }(${sessionScope.admin=='y'?"관리자":"일반회원" })님 로그인되었습니다</li>
+	        <li><input type=button class="btn btn-lg btn-danger" value="로그아웃" id="logoutBtn"></li>
+	      </ul>
+	  </c:if> 
     </div>
   </header>
 </div>
@@ -84,20 +154,20 @@
       </li>
       <li><a class="drop" href="#">커뮤니티</a>
         <ul>
-          <li><a href="pages/gallery.html">공지사항</a></li>
+          <li><a href="../notice/list.do">공지사항</a></li>
          
          <li><a href="../freeboard/list.do">자유게시판</a></li>
          <c:if test="${sessionScope.id!=null }">
-          <li><a href="pages/sidebar-left.html">후기게시판</a></li>
+          <li><a href="pages/sidebar-left.html">묻고답하기</a></li>
          </c:if>
         </ul>
       </li>
       <c:if test="${sessionScope.id!=null }">
         <c:if test="${sessionScope.admin=='n' }">
-         <li><a href="#">마이페이지</a></li>
+         <li><a href="../mypage/mypage_main.do">마이페이지</a></li>
         </c:if>
         <c:if test="${sessionScope.admin=='y' }">
-         <li><a href="#">관리자페이지</a></li>
+         <li><a href="../adminpage/admin_main.do">관리자페이지</a></li>
         </c:if>
       </c:if>
     </ul>

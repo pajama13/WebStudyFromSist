@@ -15,11 +15,11 @@ public class FoodDAO {
 	   try
 	   {
 		   conn=CreateConnection.getConnection();
-		   String sql="SELECT /*+ INDEX_ASC(project_category pc_cno_pk)*/ cno,title,subject,poster "
+		   String sql="SELECT /*+ INDEX_ASC(project_category pc_cno_pk)*/cno,title,subject,poster "
 				     +"FROM project_category";
 		   ps=conn.prepareStatement(sql);
 		   ResultSet rs=ps.executeQuery();
-		   while(rs.next()) 
+		   while(rs.next())
 		   {
 			   CategoryVO vo=new CategoryVO();
 			   vo.setCno(rs.getInt(1));
@@ -85,7 +85,6 @@ public class FoodDAO {
 	   }
 	   return list;
    }
-   
    public int foodLoactionTotalPage(String ss)
    {
 	   int total=0;
@@ -111,8 +110,8 @@ public class FoodDAO {
 	   }
 	   return total;
    }
-   //() => 매개변수 => ?cno=10
-   //public List<FoodVO> findByCno(int cno)
+   // () => 매개변수 => ?cno=10
+   // public List<FoodVO> findByCno(int cno);
    public ArrayList<FoodVO> foodListData(int cno)
    {
 	   ArrayList<FoodVO> list=new ArrayList<FoodVO>();
@@ -120,8 +119,8 @@ public class FoodDAO {
 	   {
 		   conn=CreateConnection.getConnection();
 		   String sql="SELECT fno,cno,name,address,tel,type,poster,score "
-				   	  +"FROM project_food "
-				   	  +"WHERE cno=?";
+				     +"FROM project_food "
+				     +"WHERE cno=?";
 		   ps=conn.prepareStatement(sql);
 		   ps.setInt(1, cno);
 		   ResultSet rs=ps.executeQuery();
@@ -153,7 +152,6 @@ public class FoodDAO {
 	   }
 	   return list;
    }
-   
    public CategoryVO categoryInfoData(int cno)
    {
 	   CategoryVO vo=new CategoryVO();
@@ -161,7 +159,7 @@ public class FoodDAO {
 	   {
 		   conn=CreateConnection.getConnection();
 		   String sql="SELECT title,subject FROM project_category "
-				   	  +"WHERE cno=?";
+				     +"WHERE cno=?";
 		   ps=conn.prepareStatement(sql);
 		   ps.setInt(1, cno);
 		   ResultSet rs=ps.executeQuery();
@@ -179,24 +177,27 @@ public class FoodDAO {
 	   }
 	   return vo;
    }
-   //MVC : 1. 링크 => .do => @RequestMapping() 메소드 만들기 => DAO => jsp에서 출력 : Spring, Spring-Boot
-   //상세보기
+   // MVC (1.링크 => .do) ==> @RequestMaping() 메소드 만들기 ==> DAO ==> jsp에서 출력 : Spring,Spring-Boot => 실무
+   // 상세보기 
    public FoodVO food_detail(int fno)
    {
 	   FoodVO vo=new FoodVO();
 	   try
 	   {
 		   conn=CreateConnection.getConnection();
+		   // 트리거 
 		   String sql="UPDATE project_food SET "
-				   	  +"hit=hit+1 "
-				   	  +"WHERE fno=?";
+				     +"hit=hit+1 "
+				     +"WHERE fno=?";
+		   // => 좋아요 , 찜 
+		   // => 댓글 : 프로시저 
 		   ps=conn.prepareStatement(sql);
 		   ps.setInt(1, fno);
 		   ps.executeUpdate();
 		   
 		   sql="SELECT fno,cno,name,tel,score,poster,address,type,time,parking,menu,price,good,soso,bad "
-			   +"FROM project_food "
-			   +"WHERE fno=?";
+			  +"FROM project_food "
+			  +"WHERE fno=?";
 		   ps=conn.prepareStatement(sql);
 		   ps.setInt(1, fno);
 		   ResultSet rs=ps.executeQuery();
@@ -224,8 +225,45 @@ public class FoodDAO {
 	   finally
 	   {
 		   CreateConnection.disConnection(conn, ps);
-		   //DAO, VO, Model(스프링 : ~Controller, 스트럿츠 : ~Action)
+		   // DAO , VO , Model(스프링 : ~Controller , 스트럿츠 : ~Action)
 	   }
 	   return vo;
    }
+   // 관련 레시피 출력 
+   public List<RecipeVO> food_recipe_data(String type)
+   {
+	   List<RecipeVO> list=new ArrayList<RecipeVO>();
+	   try
+	   {
+		   conn=CreateConnection.getConnection();
+		   String sql="SELECT title,poster,chef,rownum "
+				     +"FROM recipe "
+				     +"WHERE REGEXP_LIKE(title,?) AND rownum<=5";
+		   ps=conn.prepareStatement(sql);
+		   ps.setString(1, type);
+		   ResultSet rs=ps.executeQuery();
+		   while(rs.next())
+		   {
+			   RecipeVO vo=new RecipeVO();
+			   vo.setTitle(rs.getString(1));
+			   vo.setPoster(rs.getString(2));
+			   vo.setChef(rs.getString(3));
+			   list.add(vo);
+		   }
+		   rs.close();
+	   }catch(Exception ex)
+	   {
+		   ex.printStackTrace();
+	   }
+	   finally
+	   {
+		   CreateConnection.disConnection(conn, ps);
+	   }
+	   return list;
+   }
+   
 }
+
+
+
+
